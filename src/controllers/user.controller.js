@@ -12,6 +12,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false });
+        console.log(accessToken);
         return { accessToken, refreshToken };
     } catch (error) {
         throw new ApiError(
@@ -99,9 +100,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) throw new ApiError(401, `Invalid password`);
 
-    const { accessToken, refreshToken } = generateAccessAndRefreshToken(
-        user._id
-    );
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
     const loggedInUser = await User.findById(user._id).select(
         "-password -refreshToken"
@@ -110,6 +109,7 @@ const loginUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true,
     };
+    console.log(accessToken);
 
     return res
         .status(200)
